@@ -1,0 +1,150 @@
+{
+  "name": "Taj Recipe",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "Slack-Recipe",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.2,
+      "position": [
+        -528,
+        16
+      ],
+      "id": "4e065d85-8270-477b-a96f-a6ae622fd39b",
+      "name": "Webhook",
+      "webhookId": "1eaf9130-6bfa-47bc-a104-14b0946a9d1f"
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "Got it! Looking up a delicious recipe for you...",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        -304,
+        16
+      ],
+      "id": "cad8f616-6eaf-4c7d-b7fc-e4b5e90e56e7",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4.1-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4.1-MINI"
+        },
+        "responses": {
+          "values": [
+            {
+              "role": "system",
+              "content": "You are an expert chef. The user will ask for a recipe (veg or non-veg). Provide a clear, delicious recipe formatted with Slack markdown: use *bold* for section titles, bullet points (-) for ingredients, and numbered lists (1., 2.) for instructions. Include prep time and cook time."
+            },
+            {
+              "content": "={{ $('Webhook').item.json.body.text }}"
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.3,
+      "position": [
+        -80,
+        16
+      ],
+      "id": "2da3288d-6c08-44a3-97ad-bb1554ceda15",
+      "name": "Message a model",
+      "credentials": {
+        "openAiApi": {
+          "id": "N5xAUwYLe5izMWFW",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "={{ $('Webhook').item.json.body.channel_id }}",
+          "mode": "id"
+        },
+        "text": "={{ $('Message a model').item.json.output[0].content[0].text }}",
+        "otherOptions": {}
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.7,
+      "position": [
+        288,
+        16
+      ],
+      "id": "7118dd7e-a47a-464d-a1ea-8eb620d216a3",
+      "name": "Send a message",
+      "webhookId": "d74ee604-4ce8-4257-a446-06439c8a0792",
+      "credentials": {
+        "slackApi": {
+          "id": "msu9h3fjJArv7rUS",
+          "name": "Slack account 3"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Respond to Webhook": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "144cd2bc-6cdc-4584-a08a-dfad7ee3457b",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "45c84b23cd9ffe467ac1bb0c146552a6e24d68a86300bef8abcba632523f4eb4"
+  },
+  "nodeGroups": [],
+  "id": "KXXFqQhqrztQADFe",
+  "tags": []
+}
